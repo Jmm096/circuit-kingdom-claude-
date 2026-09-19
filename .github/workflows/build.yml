@@ -23,10 +23,18 @@ jobs:
           curl -L -o cldcapi11.jar https://repo1.maven.org/maven2/org/microemu/cldcapi11/2.0.3/cldcapi11-2.0.3.jar
           curl -L -o midpapi20.jar https://repo1.maven.org/maven2/org/microemu/midpapi20/2.0.3/midpapi20-2.0.3.jar
 
+      - name: Build a StringBuilder compile-time shim
+        run: |
+          mkdir -p shim-classes
+          javac -d shim-classes shim/java/lang/StringBuilder.java
+          cd shim-classes
+          jar cf ../stringbuilder-shim.jar .
+          cd ..
+
       - name: Compile
         run: |
           mkdir -p build/classes
-          javac -bootclasspath cldcapi11.jar:midpapi20.jar \
+          javac -bootclasspath stringbuilder-shim.jar:cldcapi11.jar:midpapi20.jar \
                 -source 1.6 -target 1.6 -nowarn \
                 -d build/classes \
                 $(find src -name "*.java")
