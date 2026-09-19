@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+MIDlet-Name: Circuit Kingdom
+MIDlet-Version: 1.0.0
+MIDlet-Vendor: You
+MIDlet-1: Circuit Kingdom, , com.circuitkingdom.PlatformerMIDlet
+MicroEdition-Profile: MIDP-2.0
+MicroEdition-Configuration: CLDC-1.1
