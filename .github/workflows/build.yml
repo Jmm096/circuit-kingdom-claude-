@@ -1,0 +1,52 @@
+name: Build Circuit Kingdom MIDlet
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      - name: Download CLDC 1.1 / MIDP 2.0 API stub jars
+        run: |
+          curl -L -o cldcapi11.jar https://repo1.maven.org/maven2/org/microemu/cldcapi11/2.0.3/cldcapi11-2.0.3.jar
+          curl -L -o midpapi20.jar https://repo1.maven.org/maven2/org/microemu/midpapi20/2.0.3/midpapi20-2.0.3.jar
+
+      - name: Compile
+        run: |
+          mkdir -p build/classes
+          javac -bootclasspath cldcapi11.jar:midpapi20.jar \
+                -source 1.6 -target 1.6 -nowarn \
+                -d build/classes \
+                $(find src -name "*.java")
+
+      - name: Package jar
+        run: |
+          cd build/classes
+          jar cfm ../../CircuitKingdom.jar ../../res/MANIFEST.MF .
+          cd ../..
+
+      - name: Sync MIDlet-Jar-Size in the JAD
+        run: |
+          SIZE=$(stat -c%s CircuitKingdom.jar)
+          sed -i "s/MIDlet-Jar-Size:.*/MIDlet-Jar-Size: ${SIZE}/" CircuitKingdom.jad
+          cat CircuitKingdom.jad
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CircuitKingdom-j2me-build
+          path: |
+            CircuitKingdom.jar
+            CircuitKingdom.jad
